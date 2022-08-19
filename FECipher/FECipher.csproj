@@ -8,9 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="IGamePlugInBase">
-      <HintPath>..\..\Multi-TCG-Deckbuilder\IGamePlugInBase\bin\Debug\net6.0\IGamePlugInBase.dll</HintPath>
-    </Reference>
+    <ProjectReference Include="..\..\Multi-TCG-Deckbuilder\IGamePlugInBase\IGamePlugInBase.csproj" />
   </ItemGroup>
 
   <ItemGroup>
