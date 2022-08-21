@@ -117,9 +117,9 @@ namespace FECipher
         }
 
         [JsonIgnore]
-        public Dictionary<string, AlternateArt> AltArts
+        public Dictionary<string, IAlternateArt> AltArts
         {
-            get { return this.altArts.ToDictionary(keySelector: m => m.Id, elementSelector: m => m as AlternateArt); }
+            get { return this.altArts.ToDictionary(keySelector: m => m.Id, elementSelector: m => m as IAlternateArt); }
         }
 
         [JsonIgnore]

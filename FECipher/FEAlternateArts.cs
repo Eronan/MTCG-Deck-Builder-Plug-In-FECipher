@@ -3,7 +3,7 @@ using IGamePlugInBase;
 
 namespace FECipher
 {
-    public class FEAlternateArts : AlternateArt
+    public class FEAlternateArts : IAlternateArt
     {
         [JsonPropertyName("CardCode")]
         [JsonPropertyOrder(0)]

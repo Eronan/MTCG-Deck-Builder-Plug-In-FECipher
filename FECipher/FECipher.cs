@@ -1,4 +1,6 @@
 ﻿using IGamePlugInBase;
+using Octokit;
+using System.Reflection;
 using System.Text.Json;
 
 namespace FECipher
@@ -7,88 +9,21 @@ namespace FECipher
     {
         //Variables
         IFormat[] formatList;
-        Dictionary<string, FECard> cardList;
         SearchField[] searchFieldList;
+        Version? currentVersion;
 
+        // Constructor
         public FECipher()
         {
-            string jsonText = File.ReadAllText("./plug-ins/fe-cipher/cardlist.json");
-            JsonElement jsonDeserialize = JsonSerializer.Deserialize<dynamic>(jsonText);
-            var jsonEnumerator = jsonDeserialize.EnumerateArray();
-
-            // Get Card Data
-            Dictionary<string, FECard> feCards = new Dictionary<string, FECard>();
-            foreach (var jsonCard in jsonEnumerator)
-            {
-                string? id = jsonCard.GetProperty("CardID").GetString();
-                string? character = jsonCard.GetProperty("Character").GetString();
-                string? title = jsonCard.GetProperty("Title").GetString();
-                string[]? colors = jsonCard.GetProperty("Color").Deserialize<string[]>();
-                string? cost = jsonCard.GetProperty("Cost").GetString();
-                JsonElement classChangeProperty;
-                string? cccost = null;
-                if (jsonCard.TryGetProperty("ClassChangeCost", out classChangeProperty))
-                {
-                    cccost = classChangeProperty.GetString();
-                }
-                string? cardClass = jsonCard.GetProperty("Class").GetString();
-                string[]? types = jsonCard.GetProperty("Type").Deserialize<string[]>();
-                int minRange = jsonCard.GetProperty("MinRange").GetInt32();
-                int maxRange = jsonCard.GetProperty("MaxRange").GetInt32();
-                string? attack = jsonCard.GetProperty("Attack").GetString();
-                string? support = jsonCard.GetProperty("Support").GetString();
-                string? skill = jsonCard.GetProperty("Skill").GetString();
-                JsonElement supportSkillProperty;
-                string? supportSkill = null;
-                if (jsonCard.TryGetProperty("SupportSkill", out supportSkillProperty))
-                {
-                    supportSkill = supportSkillProperty.GetString();
-                }
-
-                string? rarity = jsonCard.GetProperty("Rarity").GetString();
-                int seriesNo = jsonCard.GetProperty("SeriesNumber").GetInt32();
-                var altArtEnumerator = jsonCard.GetProperty("AlternateArts").EnumerateArray();
-                List<FEAlternateArts> altArts = new List<FEAlternateArts>();
-
-                foreach (var altArt in altArtEnumerator)
-                {
-                    string? code = altArt.GetProperty("CardCode").GetString();
-                    string? setNo = altArt.GetProperty("SetCode").GetString();
-                    string? image = altArt.GetProperty("ImageFile").GetString();
-                    string? lackeyID = altArt.GetProperty("LackeyCCGID").GetString();
-                    string? lackeyName = altArt.GetProperty("LackeyCCGName").GetString();
-
-                    //Cannot be Null
-                    if (code == null || setNo == null || image == null || lackeyID == null || lackeyName == null)
-                    {
-                        throw new ArgumentException("JSON Field AlternateArts is missing a Non-Nullable Property.");
-                    }
-
-                    FEAlternateArts alt = new FEAlternateArts(code, setNo, image, lackeyID, lackeyName);
-                    altArts.Add(alt);
-                }
-
-                if (id == null || character == null || title == null || colors == null || cost == null || cardClass == null || types == null ||
-                    attack == null || support == null || skill == null || rarity == null)
-                {
-                    throw new ArgumentException(String.Format("JSON Object {0}: {1} is missing a Non-Nullabe Property.", character, title));
-                }
-
-                FECard card = new FECard(id, character, title, colors, cost, cccost, cardClass, types, minRange,
-                    maxRange, attack, support, skill, supportSkill, rarity, seriesNo, altArts);
-
-                feCards.Add(card.ID, card);
-            }
-
-            this.cardList = feCards;
+            CardListInitialized = false;
 
             // Create Valid Formats
             formatList = new IFormat[2]
             {
-                new FEFormats("unlimited", "Unlimited", Properties.Resources.UnlimitedIcon, "All cards are allowed in this format from Series 1 to Series 22.", this.cardList.Values.ToArray()),
+                new FEFormats("unlimited", "Unlimited", Properties.Resources.UnlimitedIcon, "All cards are allowed in this format from Series 1 to Series 22.", fecard => true),
                 new FEFormats("standard", "Standard", Properties.Resources.StandardIcon,
                 "The last Official Format of Fire Emblem Cipher, cards from Series 1 to Series 4 are not allowed in this format.",
-                this.cardList.Values.ToArray().Where(item => item.seriesNo > 4).ToArray()),
+                (fecard) => fecard.seriesNo > 4),
             };
 
             // Create Search Fields
@@ -109,19 +44,22 @@ namespace FECipher
                 new SearchField("series", "Series", 0, 12),
             };
 
+
             // Create Menu Items
-            this.ImportFunctions = new ImportMenuItem[1]
+            this.ImportFunctions = new IImportMenuItem[1]
             {
-                new LackeyCCGImport(this.cardList.Values)
+                new LackeyCCGImport()
             };
 
-            this.ExportFunctions = new ExportMenuItem[1]
+            this.ExportFunctions = new IExportMenuItem[1]
             {
-                new LackeyCCGExport(this.cardList.Values)
+                new LackeyCCGExport()
             };
+
+            currentVersion = Assembly.GetExecutingAssembly().GetName().Version;
         }
 
-        // Functions
+        // Private Functions
         private bool MatchFields(FECard card, SearchField[] searchFields)
         {
             foreach (SearchField field in searchFields)
@@ -185,47 +123,134 @@ namespace FECipher
             return true;
         }
 
+        private void LoadCardList(bool downloadImages)
+        {
+            string jsonText = File.ReadAllText("./plug-ins/fe-cipher/cardlist.json");
+            JsonElement jsonDeserialize = JsonSerializer.Deserialize<dynamic>(jsonText);
+            var jsonEnumerator = jsonDeserialize.EnumerateArray();
+
+            // Get Card Data
+            List<FECard> feCards = new List<FECard>();
+            foreach (var jsonCard in jsonEnumerator)
+            {
+                string? id = jsonCard.GetProperty("CardID").GetString();
+                string? character = jsonCard.GetProperty("Character").GetString();
+                string? title = jsonCard.GetProperty("Title").GetString();
+                string[]? colors = jsonCard.GetProperty("Color").Deserialize<string[]>();
+                string? cost = jsonCard.GetProperty("Cost").GetString();
+                JsonElement classChangeProperty;
+                string? cccost = null;
+                if (jsonCard.TryGetProperty("ClassChangeCost", out classChangeProperty))
+                {
+                    cccost = classChangeProperty.GetString();
+                }
+                string? cardClass = jsonCard.GetProperty("Class").GetString();
+                string[]? types = jsonCard.GetProperty("Type").Deserialize<string[]>();
+                int minRange = jsonCard.GetProperty("MinRange").GetInt32();
+                int maxRange = jsonCard.GetProperty("MaxRange").GetInt32();
+                string? attack = jsonCard.GetProperty("Attack").GetString();
+                string? support = jsonCard.GetProperty("Support").GetString();
+                string? skill = jsonCard.GetProperty("Skill").GetString();
+                JsonElement supportSkillProperty;
+                string? supportSkill = null;
+                if (jsonCard.TryGetProperty("SupportSkill", out supportSkillProperty))
+                {
+                    supportSkill = supportSkillProperty.GetString();
+                }
+
+                string? rarity = jsonCard.GetProperty("Rarity").GetString();
+                int seriesNo = jsonCard.GetProperty("SeriesNumber").GetInt32();
+                var altArtEnumerator = jsonCard.GetProperty("AlternateArts").EnumerateArray();
+                List<FEAlternateArts> altArts = new List<FEAlternateArts>();
+
+                foreach (var altArt in altArtEnumerator)
+                {
+                    string? code = altArt.GetProperty("CardCode").GetString();
+                    string? setNo = altArt.GetProperty("SetCode").GetString();
+                    string? image = altArt.GetProperty("ImageFile").GetString();
+                    string? lackeyID = altArt.GetProperty("LackeyCCGID").GetString();
+                    string? lackeyName = altArt.GetProperty("LackeyCCGName").GetString();
+
+                    //Cannot be Null
+                    if (code == null || setNo == null || image == null || lackeyID == null || lackeyName == null)
+                    {
+                        throw new ArgumentException("JSON Field AlternateArts is missing a Non-Nullable Property.");
+                    }
+
+                    FEAlternateArts alt = new FEAlternateArts(code, setNo, image, lackeyID, lackeyName);
+                    altArts.Add(alt);
+                }
+
+                if (id == null || character == null || title == null || colors == null || cost == null || cardClass == null || types == null ||
+                    attack == null || support == null || skill == null || rarity == null)
+                {
+                    throw new ArgumentException(String.Format("JSON Object {0}: {1} is missing a Non-Nullabe Property.", character, title));
+                }
+
+                FECard card = new FECard(id, character, title, colors, cost, cccost, cardClass, types, minRange,
+                    maxRange, attack, support, skill, supportSkill, rarity, seriesNo, altArts);
+
+                feCards.Add(card);
+            }
+
+            // Create Singleton Instance
+            FECardList.SetCardlist(feCards);
+        }
+
         //Public Accessors
         public string Name { get => "FECipher"; }
         public string LongName { get => "Fire Emblem Cipher"; }
         public byte[] IconImage { get => Properties.Resources.Icon; }
         public IFormat[] Formats { get => this.formatList; }
-        public ICard[] CardList { get => this.cardList.Values.ToArray(); }
         public SearchField[] SearchFields { get => this.searchFieldList; }
 
-        public ImportMenuItem[] ImportFunctions { get; }
+        public IImportMenuItem[] ImportFunctions { get; private set; }
 
-        public ExportMenuItem[] ExportFunctions { get; }
+        public IExportMenuItem[] ExportFunctions { get; private set; }
 
         public string AboutInformation
         {
             get
             {
-                Version? version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
                 string text = "Fire Emblem Cipher Multi-TCG Deck Builder Plug-In\n" +
-                    (version != null ? string.Format("Version {0}\n", version.ToString()) : "") +
+                    (this.currentVersion != null ? string.Format("Version {0}\n", this.currentVersion.ToString()) : "") +
                     "Developed by Eronan\n" +
                     "-\n" +
                     "The Program is free and released under the \"GNU General Public License v3.0\". Any iterations on the program must be open-sourced.\n" +
-                    "https://github.com/Eronan/Multi-TCG-Deckbuilder/blob/master/LICENSE.md\n" +
+                    "https://github.com/Eronan/Multi-TCG-Deck-Builder-FECipher-Plug-In/blob/master/LICENSE.md\n" +
                     "-\n" +
                     "Check for New Releases on GitHub:\n" +
-                    "https://github.com/Eronan/Multi-TCG-Deckbuilder/releases\n" +
+                    "https://github.com/Eronan/Multi-TCG-Deck-Builder-FECipher-Plug-In/releases\n" +
                     "-\n" +
                     "To find Verified Plug-Ins that work with the latest versions of the Application, please visit: \n" +
-                    "https://github.com/Eronan/Multi-TCG-Deckbuilder/releases";
+                    "https://github.com/Eronan/Multi-TCG-Deck-Builder-FECipher-Plug-In/releases";
 
                 return text;
             }
         }
 
+        public bool CardListInitialized { get; private set; }
+
         // Public Functions
+        public void InitializePlugIn()
+        {
+            try
+            {
+                LoadCardList(false);
+            }
+            catch (Exception e) when (e is FileNotFoundException || e is DirectoryNotFoundException)
+            {
+                Console.WriteLine(e.Message);
+                throw new PlugInUpdateRequiredException("Update required to download Files.", e);
+            }
+        }
+
         public List<DeckBuilderCard> AdvancedFilterSearchList(IEnumerable<DeckBuilderCard> cards, SearchField[] searchFields)
         {
             List<DeckBuilderCard> returnList = new List<DeckBuilderCard>();
             foreach (DeckBuilderCard card in cards)
             {
-                FECard? feCard = this.cardList.GetValueOrDefault(card.CardID);
+                FECard? feCard = FECardList.Instance.GetCard(card.CardID);
                 if (feCard != null)
                 {
                     if (this.MatchFields(feCard, searchFields)) returnList.Add(card);
@@ -242,8 +267,8 @@ namespace FECipher
             }
 
             // Get FECards
-            FECard? feCardX = this.cardList.GetValueOrDefault(x.CardID);
-            FECard? feCardY = this.cardList.GetValueOrDefault(y.CardID);
+            FECard? feCardX = FECardList.Instance.GetCard(x.CardID);
+            FECard? feCardY = FECardList.Instance.GetCard(y.CardID);
 
             if (feCardX == null || feCardY == null)
             {
@@ -290,9 +315,38 @@ namespace FECipher
             }
         }
 
-        public string UpdatePlugIn()
+        public async Task<bool> UpdatePlugInAsync()
         {
-            throw new NotImplementedException();
+            // Initialize Values
+            GitHubClient client = new GitHubClient(new Octokit.ProductHeaderValue("tcg-deck-builder"));
+
+            var releases = await client.Repository.Release.GetAll("Eronan", "Multi-TCG-Deck-Builder-FECipher-Plug-In");
+            var latest = releases.FirstOrDefault(release => !release.Prerelease);
+
+            if (latest != null)
+            {
+                Console.WriteLine(
+                    "The latest release is tagged at {0} and is named {1}",
+                    latest.TagName,
+                    latest.Name);
+
+                var latestVersion = new Version(latest.TagName);
+
+                if (latestVersion.CompareTo(this.currentVersion) > 0)
+                {
+                    var process = new System.Diagnostics.ProcessStartInfo(latest.HtmlUrl)
+                    {
+                        UseShellExecute = true,
+                        Verb = "open"
+                    };
+                    System.Diagnostics.Process.Start(process);
+                    return false;
+                }
+            }
+
+            // https://1drv.ms/u/s!AkZx8vA0aoG2q218USNyChlKj06c?e=iGmHmZ
+
+            return true;
         }
     }
 }

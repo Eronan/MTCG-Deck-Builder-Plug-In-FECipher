@@ -1,27 +1,18 @@
 ﻿using IGamePlugInBase;
-using System.IO;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Xml;
 
 namespace FECipher
 {
-    internal class LackeyCCGImport : ImportMenuItem
+    internal class LackeyCCGImport : IImportMenuItem
     {
-        IEnumerable<FECard> CardList;
-
         public string Header { get => "From LackeyCCG"; }
 
         public string DefaultExtension { get => ".dek"; }
 
         public string FileFilter { get => "LackeyCCG Deck File (.dek)|*.dek"; }
 
-        public LackeyCCGImport(IEnumerable<FECard> cardList)
+        public LackeyCCGImport()
         {
-            this.CardList = cardList;
         }
 
         public DeckBuilderDeckFile Import(string filePath, string currentFormat)
@@ -55,7 +46,7 @@ namespace FECipher
                     {
                         string lackeyID = card.SelectSingleNode("name").Attributes["id"].InnerText;
 
-                        foreach (FECard feCard in this.CardList)
+                        foreach (FECard feCard in FECardList.CardList)
                         {
                             FEAlternateArts? altArt = feCard.altArts.FirstOrDefault(art => art.LackeyCCGId == lackeyID);
 
@@ -93,23 +84,14 @@ namespace FECipher
         }
     }
 
-    internal class LackeyCCGExport : ExportMenuItem
+    internal class LackeyCCGExport : IExportMenuItem
     {
-        // Private Variables
-        IEnumerable<FECard> CardList;
-
         // Accessors
         public string Header { get => "To LackeyCCG"; }
 
         public string DefaultExtension { get => ".dek"; }
 
         public string FileFilter { get => "LackeyCCG Deck File (.dek)|*.dek"; }
-
-        // Constructor
-        public LackeyCCGExport(IEnumerable<FECard> cardList)
-        {
-            this.CardList = cardList;
-        }
 
         public void Export(string filePath, DeckBuilderDeckFile decks)
         {
@@ -157,7 +139,7 @@ namespace FECipher
             // Write All Cards
             foreach (DeckBuilderCard deckCard in deck.Cards)
             {
-                FECard feCard = this.CardList.First(card => card.ID == deckCard.CardID);
+                FECard feCard = FECardList.Instance.GetCard(deckCard.CardID);
                 FEAlternateArts altArt = feCard.altArts.First(art => art.Id == deckCard.ArtID);
 
                 // Write Card

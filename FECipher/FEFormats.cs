@@ -1,25 +1,27 @@
 ﻿using IGamePlugInBase;
+using System.Linq;
 
 namespace FECipher
 {
     internal class FEFormats : IFormat
     {
-        FECard[] cardlist;
+        Func<FECard, bool> cardlistFilter;
+        FECard[]? cards;
 
-        public FEFormats(string name, string longname, byte[] icon, string description, FECard[] cardlist)
+        public FEFormats(string name, string longname, byte[] icon, string description, Func<FECard, bool> filter)
         {
             this.Name = name;
             this.LongName = longname;
             this.Icon = icon;
             this.Description = description;
 
-            this.cardlist = cardlist;
-
             this.Decks = new IDeck[2]
             {
-                new FEMainCharacter(this.cardlist),
+                new FEMainCharacter(),
                 new FEMainDeck(),
             };
+
+            cardlistFilter = filter;
         }
 
         public string Name { get; }
@@ -30,10 +32,20 @@ namespace FECipher
 
         public string Description { get; }
 
-        public ICard[] CardList { get => this.cardlist; }
+        public ICard[] CardList
+        {
+            get
+            {
+                if (cards == null)
+                {
+                    cards = FECardList.CardList.Where(cardlistFilter).ToArray();
+                }
+
+                return cards;
+            }
+        }
 
         public IDeck[] Decks { get; }
-
 
         public string DefaultDeckName(DeckBuilderCard card)
         {
@@ -43,10 +55,10 @@ namespace FECipher
         public bool ValidateMaximum(DeckBuilderCard card, Dictionary<string, IEnumerable<DeckBuilderCard>> decks)
         {
             int count = 0;
-            FECard feCardCheck = this.cardlist.First(cardlistItem => cardlistItem.ID == card.CardID);
+            FECard feCardCheck = FECardList.Instance.GetCard(card.CardID);
             foreach (KeyValuePair<string, IEnumerable<DeckBuilderCard>> decklist in decks)
             {
-                count += decklist.Value.Count(predicate: item => item.CardID == feCardCheck.ID || feCardCheck.Name == this.cardlist.First(cardlistItem => cardlistItem.ID == item.CardID).Name);
+                count += decklist.Value.Count(predicate: item => item.CardID == feCardCheck.ID || feCardCheck.Name == FECardList.Instance.GetCard(item.CardID).Name);
                 if (count >= 4) { return true; }
             }
             return false;
@@ -57,7 +69,7 @@ namespace FECipher
             // Get Main Character Card
             IEnumerable<DeckBuilderCard>? mainCharDeck = decks.GetValueOrDefault(this.Decks[0].Name);
             string mainCharacterID = mainCharDeck != null && mainCharDeck.Count() == 1 ? mainCharDeck.First().CardID : "";
-            IEnumerable<FECard> mainCharMatches = this.cardlist.Where(item => item.ID == mainCharacterID);
+            IEnumerable<FECard> mainCharMatches = FECardList.CardList.Where(item => item.ID == mainCharacterID);
             FECard? mainCharacter = mainCharMatches.Count() == 1 ? mainCharMatches.First() : null;
 
             // Get Counts
@@ -70,7 +82,7 @@ namespace FECipher
                 // Perform Counts
                 deckSize += keyValue.Value.Count();
                 mainCharacterNames += mainCharacter != null
-                    ? keyValue.Value.Count(card => this.cardlist.First(item => item.ID == card.CardID).characterName == mainCharacter.characterName)
+                    ? keyValue.Value.Count(card => FECardList.Instance.GetCard(card.CardID).characterName == mainCharacter.characterName)
                     : 0;
             }
 
@@ -84,7 +96,7 @@ namespace FECipher
             // Get Main Character Card
             IEnumerable<DeckBuilderCard>? mainCharDeck = decks.GetValueOrDefault(this.Decks[0].Name);
             string mainCharacterID = mainCharDeck != null && mainCharDeck.Count() == 1 ? mainCharDeck.First().CardID : "";
-            IEnumerable<FECard> mainCharMatches = this.cardlist.Where(item => item.ID == mainCharacterID);
+            IEnumerable<FECard> mainCharMatches = FECardList.CardList.Where(item => item.ID == mainCharacterID);
             FECard? mainCharacter = mainCharMatches.Count() == 1 ? mainCharMatches.First() : null;
 
             // Get Counts
@@ -107,7 +119,7 @@ namespace FECipher
 
                 foreach (DeckBuilderCard card in keyValue.Value)
                 {
-                    FECard feCard = this.cardlist.First(item => item.ID == card.CardID);
+                    FECard feCard = FECardList.Instance.GetCard(card.CardID);
 
                     // Main Character Counting
                     if (mainCharacter != null && feCard.characterName == mainCharacter.characterName) { mainCharacterNames++; }
