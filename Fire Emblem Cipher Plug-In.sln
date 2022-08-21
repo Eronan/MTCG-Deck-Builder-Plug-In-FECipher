@@ -5,7 +5,9 @@ VisualStudioVersion = 17.3.32804.467
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FECipher", "FECipher\FECipher.csproj", "{8D4FA498-D347-4F7F-9A9E-DA47FA5D73E8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConvertLackeyCCGFileToJSON", "ConvertLackeyCCGFileToJSON\ConvertLackeyCCGFileToJSON.csproj", "{085BF614-CE80-4210-A857-627955D02651}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConvertLackeyCCGFileToJSON", "ConvertLackeyCCGFileToJSON\ConvertLackeyCCGFileToJSON.csproj", "{085BF614-CE80-4210-A857-627955D02651}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AddDownloadURLs", "AddDownloadURLs\AddDownloadURLs.csproj", "{CA21F14D-0023-4480-9FDA-461347DF7B7E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{085BF614-CE80-4210-A857-627955D02651}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{085BF614-CE80-4210-A857-627955D02651}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{085BF614-CE80-4210-A857-627955D02651}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CA21F14D-0023-4480-9FDA-461347DF7B7E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CA21F14D-0023-4480-9FDA-461347DF7B7E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CA21F14D-0023-4480-9FDA-461347DF7B7E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CA21F14D-0023-4480-9FDA-461347DF7B7E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

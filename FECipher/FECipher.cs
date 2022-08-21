@@ -1,5 +1,9 @@
 ﻿using IGamePlugInBase;
 using Octokit;
+using System;
+using System.IO;
+using System.Net;
+using System.Net.Http;
 using System.Reflection;
 using System.Text.Json;
 
@@ -123,7 +127,22 @@ namespace FECipher
             return true;
         }
 
-        private void LoadCardList(bool downloadImages)
+        private async Task<bool> DownloadImage(HttpClient httpClient, string downloadURL, string imageLocation)
+        {
+            var response = await httpClient.GetAsync(downloadURL);
+            using (var stream = await response.Content.ReadAsStreamAsync())
+            {
+                var fileInfo = new FileInfo(imageLocation);
+                using (var fileStream = fileInfo.OpenWrite())
+                {
+                    await stream.CopyToAsync(fileStream);
+                }
+            }
+
+            return true;
+        }
+
+        private void LoadCardList(HttpClient? httpClient = null)
         {
             string jsonText = File.ReadAllText("./plug-ins/fe-cipher/cardlist.json");
             JsonElement jsonDeserialize = JsonSerializer.Deserialize<dynamic>(jsonText);
@@ -131,6 +150,7 @@ namespace FECipher
 
             // Get Card Data
             List<FECard> feCards = new List<FECard>();
+            List<Task<bool>> downloadList = new List<Task<bool>>();
             foreach (var jsonCard in jsonEnumerator)
             {
                 string? id = jsonCard.GetProperty("CardID").GetString();
@@ -170,15 +190,31 @@ namespace FECipher
                     string? image = altArt.GetProperty("ImageFile").GetString();
                     string? lackeyID = altArt.GetProperty("LackeyCCGID").GetString();
                     string? lackeyName = altArt.GetProperty("LackeyCCGName").GetString();
+                    string? downloadURL = altArt.GetProperty("DownloadURL").GetString();
 
                     //Cannot be Null
-                    if (code == null || setNo == null || image == null || lackeyID == null || lackeyName == null)
+                    if (code == null || setNo == null || image == null || lackeyID == null || lackeyName == null || downloadURL == null)
                     {
                         throw new ArgumentException("JSON Field AlternateArts is missing a Non-Nullable Property.");
                     }
 
-                    FEAlternateArts alt = new FEAlternateArts(code, setNo, image, lackeyID, lackeyName);
+                    FEAlternateArts alt = new FEAlternateArts(code, setNo, image, lackeyID, lackeyName, downloadURL);
                     altArts.Add(alt);
+
+                    // Download File
+                    if (httpClient != null)
+                    {
+                        if (!File.Exists(image))
+                        {
+                            var directoryPath = Path.GetDirectoryName(image);
+                            if (directoryPath != null && !Directory.Exists(directoryPath))
+                            {
+                                Directory.CreateDirectory(directoryPath);
+                            }
+
+                            downloadList.Add(DownloadImage(httpClient, downloadURL, image));
+                        }
+                    }
                 }
 
                 if (id == null || character == null || title == null || colors == null || cost == null || cardClass == null || types == null ||
@@ -193,15 +229,27 @@ namespace FECipher
                 feCards.Add(card);
             }
 
+            if (httpClient != null)
+            {
+                while (downloadList.Exists(task => task.Status == TaskStatus.Running))
+                {
+                    continue;
+                }
+            }
+
             // Create Singleton Instance
             FECardList.SetCardlist(feCards);
         }
 
         //Public Accessors
         public string Name { get => "FECipher"; }
+
         public string LongName { get => "Fire Emblem Cipher"; }
+
         public byte[] IconImage { get => Properties.Resources.Icon; }
+
         public IFormat[] Formats { get => this.formatList; }
+
         public SearchField[] SearchFields { get => this.searchFieldList; }
 
         public IImportMenuItem[] ImportFunctions { get; private set; }
@@ -231,12 +279,14 @@ namespace FECipher
 
         public bool CardListInitialized { get; private set; }
 
+        public string DownloadLink { get => "https://github.com/Eronan/Multi-TCG-Deck-Builder-FECipher-Plug-In/releases"; }
+
         // Public Functions
         public void InitializePlugIn()
         {
             try
             {
-                LoadCardList(false);
+                LoadCardList();
             }
             catch (Exception e) when (e is FileNotFoundException || e is DirectoryNotFoundException)
             {
@@ -315,36 +365,21 @@ namespace FECipher
             }
         }
 
-        public async Task<bool> UpdatePlugInAsync()
+        public async Task<bool> DownloadFiles()
         {
-            // Initialize Values
-            GitHubClient client = new GitHubClient(new Octokit.ProductHeaderValue("tcg-deck-builder"));
+            // https://raw.githubusercontent.com/Eronan/Multi-TCG-Deck-Builder-FECipher-Plug-In/master/FECipher/cardlist.json
 
-            var releases = await client.Repository.Release.GetAll("Eronan", "Multi-TCG-Deck-Builder-FECipher-Plug-In");
-            var latest = releases.FirstOrDefault(release => !release.Prerelease);
-
-            if (latest != null)
+            // Download Card List File
+            if (!Directory.Exists("./plug-ins/fe-cipher"))
             {
-                Console.WriteLine(
-                    "The latest release is tagged at {0} and is named {1}",
-                    latest.TagName,
-                    latest.Name);
-
-                var latestVersion = new Version(latest.TagName);
-
-                if (latestVersion.CompareTo(this.currentVersion) > 0)
-                {
-                    var process = new System.Diagnostics.ProcessStartInfo(latest.HtmlUrl)
-                    {
-                        UseShellExecute = true,
-                        Verb = "open"
-                    };
-                    System.Diagnostics.Process.Start(process);
-                    return false;
-                }
+                Directory.CreateDirectory("./plug-ins/fe-cipher");
             }
 
-            // https://1drv.ms/u/s!AkZx8vA0aoG2q218USNyChlKj06c?e=iGmHmZ
+            var client = new HttpClient();
+            var jsonFile = await client.GetStringAsync(@"https://raw.githubusercontent.com/Eronan/Multi-TCG-Deck-Builder-FECipher-Plug-In/master/FECipher/cardlist.json");
+            File.WriteAllText("./plug-ins/fe-cipher/cardlist.json", jsonFile);
+
+            LoadCardList(client);
 
             return true;
         }
