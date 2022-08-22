@@ -127,22 +127,18 @@ namespace FECipher
             return true;
         }
 
-        private async Task<bool> DownloadImage(HttpClient httpClient, string downloadURL, string imageLocation)
+        private async Task DownloadImage(HttpClient httpClient, string downloadURL, string imageLocation)
         {
-            var response = await httpClient.GetAsync(downloadURL);
+            var response = await httpClient.GetAsync(downloadURL).ConfigureAwait(false);
+            var fileInfo = new FileInfo(imageLocation);
             using (var stream = await response.Content.ReadAsStreamAsync())
+            using (var fileStream = fileInfo.OpenWrite())
             {
-                var fileInfo = new FileInfo(imageLocation);
-                using (var fileStream = fileInfo.OpenWrite())
-                {
-                    await stream.CopyToAsync(fileStream);
-                }
+                stream.CopyTo(fileStream);
             }
-
-            return true;
         }
 
-        private void LoadCardList(HttpClient? httpClient = null)
+        private async Task LoadCardList(HttpClient? httpClient = null)
         {
             string jsonText = File.ReadAllText("./plug-ins/fe-cipher/cardlist.json");
             JsonElement jsonDeserialize = JsonSerializer.Deserialize<dynamic>(jsonText);
@@ -150,7 +146,7 @@ namespace FECipher
 
             // Get Card Data
             List<FECard> feCards = new List<FECard>();
-            List<Task<bool>> downloadList = new List<Task<bool>>();
+            List<Task> downloadList = new List<Task>();
             foreach (var jsonCard in jsonEnumerator)
             {
                 string? id = jsonCard.GetProperty("CardID").GetString();
@@ -202,9 +198,12 @@ namespace FECipher
                     altArts.Add(alt);
 
                     // Download File
-                    if (httpClient != null)
+                    
+                    // Make File Path a Relative Path
+                    image = "." + image;
+                    if (!File.Exists(image))
                     {
-                        if (!File.Exists(image))
+                        if (httpClient != null)
                         {
                             var directoryPath = Path.GetDirectoryName(image);
                             if (directoryPath != null && !Directory.Exists(directoryPath))
@@ -212,7 +211,13 @@ namespace FECipher
                                 Directory.CreateDirectory(directoryPath);
                             }
 
-                            downloadList.Add(DownloadImage(httpClient, downloadURL, image));
+                            // Give it 5 minutes to download
+                            var task = DownloadImage(httpClient, downloadURL, image);
+                            downloadList.Add(task);
+                        }
+                        else
+                        {
+                            throw new FileNotFoundException(string.Format("{0} not found. Please download the file.", image));
                         }
                     }
                 }
@@ -231,10 +236,7 @@ namespace FECipher
 
             if (httpClient != null)
             {
-                while (downloadList.Exists(task => task.Status == TaskStatus.Running))
-                {
-                    continue;
-                }
+                await Task.WhenAll(downloadList.ToArray());
             }
 
             // Create Singleton Instance
@@ -286,12 +288,12 @@ namespace FECipher
         {
             try
             {
-                LoadCardList();
+                LoadCardList().Wait();
             }
-            catch (Exception e) when (e is FileNotFoundException || e is DirectoryNotFoundException)
+            catch (Exception e) when (e is FileNotFoundException || e is DirectoryNotFoundException || e.InnerException is FileNotFoundException || e.InnerException is DirectoryNotFoundException)
             {
                 Console.WriteLine(e.Message);
-                throw new PlugInUpdateRequiredException("Update required to download Files.", e);
+                throw new PlugInFilesMissingException("Please download the necessary files for the Plug-In.", e);
             }
         }
 
@@ -365,7 +367,7 @@ namespace FECipher
             }
         }
 
-        public async Task<bool> DownloadFiles()
+        public async Task DownloadFiles()
         {
             // https://raw.githubusercontent.com/Eronan/Multi-TCG-Deck-Builder-FECipher-Plug-In/master/FECipher/cardlist.json
 
@@ -376,12 +378,12 @@ namespace FECipher
             }
 
             var client = new HttpClient();
-            var jsonFile = await client.GetStringAsync(@"https://raw.githubusercontent.com/Eronan/Multi-TCG-Deck-Builder-FECipher-Plug-In/master/FECipher/cardlist.json");
+            var jsonFile = await client.GetStringAsync("https://raw.githubusercontent.com/Eronan/Multi-TCG-Deck-Builder-FECipher-Plug-In/master/FECipher/cardlist.json").ConfigureAwait(false);
             File.WriteAllText("./plug-ins/fe-cipher/cardlist.json", jsonFile);
 
-            LoadCardList(client);
+            await LoadCardList(client);
 
-            return true;
+            Console.WriteLine("Completed");
         }
     }
 }
