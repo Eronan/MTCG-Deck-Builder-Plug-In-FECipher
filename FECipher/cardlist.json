@@ -25876,7 +25876,7 @@
   {
     "CardID": "Risen.DefiledSoldierA",
     "Character": "Risen",
-    "Title": "Defiled Soldier A",
+    "Title": "Defiled Soldier",
     "Color": [
       "Blue"
     ],
@@ -25909,7 +25909,7 @@
   {
     "CardID": "Risen.DefiledSoldierB",
     "Character": "Risen",
-    "Title": "Defiled Soldier B",
+    "Title": "Defiled Soldier",
     "Color": [
       "Blue"
     ],
@@ -25942,7 +25942,7 @@
   {
     "CardID": "Risen.DefiledSoldierC",
     "Character": "Risen",
-    "Title": "Defiled Soldier C",
+    "Title": "Defiled Soldier",
     "Color": [
       "Blue"
     ],
@@ -46416,7 +46416,7 @@
   {
     "CardID": "Risen.GrotesqueSoldierA",
     "Character": "Risen",
-    "Title": "Grotesque Soldier A",
+    "Title": "Grotesque Soldier",
     "Color": [
       "Blue"
     ],
@@ -46451,7 +46451,7 @@
   {
     "CardID": "Risen.GrotesqueSoldierB",
     "Character": "Risen",
-    "Title": "Grotesque Soldier B",
+    "Title": "Grotesque Soldier",
     "Color": [
       "Blue"
     ],
@@ -46483,7 +46483,7 @@
   {
     "CardID": "Risen.GrotesqueSoldierC",
     "Character": "Risen",
-    "Title": "Grotesque Soldier C",
+    "Title": "Grotesque Soldier",
     "Color": [
       "Blue"
     ],

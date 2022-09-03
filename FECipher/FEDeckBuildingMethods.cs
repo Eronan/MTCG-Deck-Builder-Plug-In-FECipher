@@ -10,6 +10,7 @@ namespace FECipher
 {
     internal class FEDeckBuildingMethods : IDeckBuilderService
     {
+        Dictionary<string, int> SpecialCardMaximums;
         Func<FECard, bool> cardlistFilter;
         List<DeckBuilderCardArt> cardArtsList = new List<DeckBuilderCardArt>();
 
@@ -41,6 +42,22 @@ namespace FECipher
                 new SearchField("support", "Support", 3),
                 new SearchField("series", "Series", 0, 12),
             };
+
+            SpecialCardMaximums = new Dictionary<string, int>();
+            SpecialCardMaximums.Add("Anna.SecretSeller", -1);
+            SpecialCardMaximums.Add("Anna.PeddlerofManyMysteries", -1);
+            SpecialCardMaximums.Add("Necrodragon.ResurrectedWyrm", -1);
+            SpecialCardMaximums.Add("Risen.GrotesqueSoldierA", -1);
+            SpecialCardMaximums.Add("Risen.GrotesqueSoldierB", -1);
+            SpecialCardMaximums.Add("Risen.GrotesqueSoldierC", -1);
+            SpecialCardMaximums.Add("Legion.MaskedAssassin", -1);
+            SpecialCardMaximums.Add("Faceless.HeartlessMonster", -1);
+            SpecialCardMaximums.Add("Witch.SacrificeFatedforPuppetdom", -1);
+            SpecialCardMaximums.Add("Risen.DefiledSoldierA", -1);
+            SpecialCardMaximums.Add("Risen.DefiledSoldierB", -1);
+            SpecialCardMaximums.Add("Risen.DefiledSoldierC", -1);
+            SpecialCardMaximums.Add("Bael.GiantMan-EatingSpider", -1);
+            SpecialCardMaximums.Add("Gorgon.Snake-HairedDemon", -1);
         }
 
         // Creates a Filter Function
@@ -162,10 +179,17 @@ namespace FECipher
         {
             int count = 0;
 
+            // Max Copies of cards that don't have Special Maximums is 4
+            int maxCopies = SpecialCardMaximums.GetValueOrDefault(card.CardID, 4);
+            if (maxCopies == -1)
+            {
+                return false;
+            }
+
             foreach (KeyValuePair<string, IEnumerable<DeckBuilderCard>> decklist in decks)
             {
                 count += decklist.Value.Count(GetMatchFunction(card, (card1, card2) => card1.Name == card2.Name));
-                if (count >= 4) { return true; }
+                if (count >= maxCopies) { return true; }
             }
             return false;
         }
