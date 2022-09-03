@@ -44,20 +44,15 @@ namespace FECipher
         }
 
         // Creates a Filter Function
-        private Func<DeckBuilderCard, bool> IsCardMatch(DeckBuilderCard matchCard)
+        private Func<DeckBuilderCard, bool> GetMatchFunction(DeckBuilderCard matchCard, Func<FECard, FECard, bool> matchFunction)
         {
             FECard? feMatchCard = FECardList.GetCard(matchCard.CardID);
 
             bool IsCard(DeckBuilderCard item)
             {
-                if (item.CardID == matchCard.CardID)
-                {
-                    return true;
-                }
-
                 FECard? itemCardCheck = FECardList.GetCard(item.CardID);
                 return feMatchCard != null && itemCardCheck != null &&
-                    feMatchCard.Name == itemCardCheck.Name;
+                    matchFunction(feMatchCard, itemCardCheck);
             }
 
             return IsCard;
@@ -169,7 +164,7 @@ namespace FECipher
 
             foreach (KeyValuePair<string, IEnumerable<DeckBuilderCard>> decklist in decks)
             {
-                count += decklist.Value.Count(IsCardMatch(card));
+                count += decklist.Value.Count(GetMatchFunction(card, (card1, card2) => card1.Name == card2.Name));
                 if (count >= 4) { return true; }
             }
             return false;
@@ -196,7 +191,7 @@ namespace FECipher
                 // Perform Counts
                 deckSize += keyValue.Value.Count();
                 mainCharacterNames += mainCharacter != null
-                    ? keyValue.Value.Count(IsCardMatch(mainCharacter))
+                    ? keyValue.Value.Count(GetMatchFunction(mainCharacter, (card1, card2) => card1.characterName == card2.characterName))
                     : 0;
             }
 
