@@ -69,7 +69,7 @@ foreach (string line in setFileLines)
             card.classChangeCost == cccost && card.cardClass.ToUpper() == items[6].ToUpper().Trim())
         {
             string artID = items[2].Split('_')[0].Replace("plus", "+");
-            FEAlternateArts feArt = new FEAlternateArts(artID, items[1], @"\plug-ins\fe-cipher\images\" + items[1] + @"\" + items[2] + ".png", items[2], items[0]);
+            FEAlternateArts feArt = new FEAlternateArts(artID, items[1], @"\plug-ins\fe-cipher\images\" + items[1] + @"\" + items[2] + ".png", items[2], items[0], "");
             card.altArts.Add(feArt);
         }
         else
@@ -80,7 +80,7 @@ foreach (string line in setFileLines)
 
             string artID = items[2].Split('_')[0].Replace("plus", "+");
 
-            FEAlternateArts feArt = new FEAlternateArts(artID, items[1], @"\plug-ins\fe-cipher\images\" + items[1] + @"\" + items[2] + ".png", items[2], items[0]);
+            FEAlternateArts feArt = new FEAlternateArts(artID, items[1], @"\plug-ins\fe-cipher\images\" + items[1] + @"\" + items[2] + ".png", items[2], items[0], "");
             card.altArts.Add(feArt);
 
             cardList.Add(card.ID, card);
@@ -94,7 +94,7 @@ foreach (string line in setFileLines)
 
         string artID = items[2].Split('_')[0].Replace("plus", "+");
 
-        FEAlternateArts feArt = new FEAlternateArts(artID, items[1], @"\plug-ins\fe-cipher\images\" + items[1] + @"\" + items[2] + ".png", items[2], items[0]);
+        FEAlternateArts feArt = new FEAlternateArts(artID, items[1], @"\plug-ins\fe-cipher\images\" + items[1] + @"\" + items[2] + ".png", items[2], items[0], "");
         card.altArts.Add(feArt);
 
         cardList.Add(card.ID, card);

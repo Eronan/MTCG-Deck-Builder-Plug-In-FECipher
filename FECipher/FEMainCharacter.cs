@@ -4,12 +4,9 @@ namespace FECipher
 {
     public class FEMainCharacter : IDeck
     {
-        public FEMainCharacter()
-        {
-            
-        }
+        public const string MCDeckName = "maincharacter";
 
-        public string Name { get => "maincharacter"; }
+        public string Name { get => MCDeckName; }
 
         public string Label { get => "Main Character"; }
 
@@ -18,7 +15,7 @@ namespace FECipher
         public bool ValidateAdd(DeckBuilderCard card, IEnumerable<DeckBuilderCard> deck)
         {
             if (deck.Count() > 0) { return false; }
-            FECard feCard = FECardList.CardList.First(listCard => listCard.ID == card.CardID);
+            FECard feCard = FECardList.Instance.filteredList.First(listCard => listCard.ID == card.CardID);
             return deck.Count() == 0 && feCard != null && feCard.cost == "1";
         }
 
@@ -30,7 +27,7 @@ namespace FECipher
             }
             else
             {
-                FECard feCard = FECardList.Instance.GetCard(deck.First().CardID);
+                FECard? feCard = FECardList.GetCard(deck.First().CardID);
                 if (feCard != null && feCard.cost != "1")
                 {
                     return new string[1] { "Your Main Character must be a 1 Cost Card." };

@@ -1,4 +1,5 @@
 ﻿using IGamePlugInBase;
+using IGamePlugInBase.IO;
 using System.Xml;
 
 namespace FECipher
@@ -46,7 +47,7 @@ namespace FECipher
                     {
                         string lackeyID = card.SelectSingleNode("name").Attributes["id"].InnerText;
 
-                        foreach (FECard feCard in FECardList.CardList)
+                        foreach (FECard feCard in FECardList.Instance.allCards)
                         {
                             FEAlternateArts? altArt = feCard.altArts.FirstOrDefault(art => art.LackeyCCGId == lackeyID);
 
@@ -139,8 +140,13 @@ namespace FECipher
             // Write All Cards
             foreach (DeckBuilderCard deckCard in deck.Cards)
             {
-                FECard feCard = FECardList.Instance.GetCard(deckCard.CardID);
-                FEAlternateArts altArt = feCard.altArts.First(art => art.Id == deckCard.ArtID);
+                FECard? feCard = FECardList.GetCard(deckCard.CardID);
+                FEAlternateArts? altArt = feCard != null ? feCard.altArts.First(art => art.Id == deckCard.ArtID) : null;
+
+                if (feCard == null || altArt == null)
+                {
+                    continue;
+                }
 
                 // Write Card
                 xmlWriter.WriteStartElement("card");

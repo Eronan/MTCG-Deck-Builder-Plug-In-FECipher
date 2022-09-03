@@ -3,8 +3,18 @@ using IGamePlugInBase;
 
 namespace FECipher
 {
-    public class FEAlternateArts : IAlternateArt
+    public class FEAlternateArts
     {
+        public FEAlternateArts(string id, string setCode, string imageLocation, string lackeyCCGId, string lackeyCCGName, string imageDownloadURL)
+        {
+            Id = id;
+            SetCode = setCode;
+            ImageLocation = imageLocation;
+            LackeyCCGId = lackeyCCGId;
+            LackeyCCGName = lackeyCCGName;
+            ImageDownloadURL = imageDownloadURL;
+        }
+
         [JsonPropertyName("CardCode")]
         [JsonPropertyOrder(0)]
         public string Id { get; set; }
@@ -28,19 +38,5 @@ namespace FECipher
         [JsonPropertyName("DownloadURL")]
         [JsonPropertyOrder(5)]
         public string ImageDownloadURL { get; set; }
-
-        [JsonIgnore]
-        public CardArtOrientation ArtOrientation { get => CardArtOrientation.Portrait; }
-
-        [JsonConstructor]
-        public FEAlternateArts(string CardCode, string SetCode, string ImageFile, string LackeyCCGId, string LackeyCCGName, string imageURL)
-        {
-            this.Id = CardCode;
-            this.SetCode = SetCode;
-            this.ImageLocation = ImageFile;
-            this.LackeyCCGId = LackeyCCGId;
-            this.LackeyCCGName = LackeyCCGName;
-            this.ImageDownloadURL = imageURL;
-        }
     }
 }
