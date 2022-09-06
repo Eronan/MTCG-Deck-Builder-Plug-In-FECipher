@@ -12,7 +12,7 @@ namespace FECipher
         private HttpClient? httpClient { get; set; }
         public string DownloadLink { get => "https://github.com/Eronan/Multi-TCG-Deck-Builder-FECipher-Plug-In/releases"; }
 
-        public async Task DownloadFiles()
+        public async Task DownloadFiles(HttpClient httpClient)
         {
             // https://raw.githubusercontent.com/Eronan/Multi-TCG-Deck-Builder-FECipher-Plug-In/master/FECipher/cardlist.json
 
@@ -22,18 +22,12 @@ namespace FECipher
                 Directory.CreateDirectory("./plug-ins/fe-cipher");
             }
 
-            if (httpClient == null)
-            {
-                this.httpClient = new HttpClient();
-            }
+            this.httpClient = httpClient;
             
             var jsonFile = await httpClient.GetStringAsync("https://raw.githubusercontent.com/Eronan/Multi-TCG-Deck-Builder-FECipher-Plug-In/master/FECipher/cardlist.json").ConfigureAwait(false);
             File.WriteAllText("./plug-ins/fe-cipher/cardlist.json", jsonFile);
 
             FECardList.ReloadCardList(this);
-
-            httpClient.Dispose();
-            httpClient = null;
 
             Console.WriteLine("Completed");
         }
