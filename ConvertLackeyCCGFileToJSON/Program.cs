@@ -5,13 +5,13 @@ using FECipher;
 
 // See https://aka.ms/new-console-template for more information
 const string lackeyCCGFile = @"D:\Ernest's Folder\Desktop Folders\Nothing Important\LackeyCCG\plugins\FECipher0\sets\official-cards.txt";
-const string outputFile = @"D:\Ernest's Folder\GitUpdate Repos\Multi-TCG-Deckbuilder\Multi-TCG-Deckbuilder\bin\Debug\net6.0-windows\plug-ins\fe-cipher\cardlist_New.json";
+//const string outputFile = @"D:\Ernest's Folder\GitUpdate Repos\Multi-TCG-Deckbuilder\Multi-TCG-Deckbuilder\bin\Debug\net6.0-windows\plug-ins\fe-cipher\cardlist_New.json";
 
 string[] setFileLines = File.ReadAllLines(lackeyCCGFile);
 
 Dictionary<string, FECard> cardList = new Dictionary<string, FECard>();
-bool skipFirstLine = true;
-
+//bool skipFirstLine = true;
+/*
 foreach (string line in setFileLines)
 {
     if (skipFirstLine)
@@ -76,7 +76,7 @@ foreach (string line in setFileLines)
         {
             card = new FECard(id + ".2", name.Trim(), title.Trim(), colors, items[4].Trim(), cost.Trim(), cccost,
                 items[6].Trim(), types, minRange, maxRange, items[9].Trim(), items[10].Trim(),
-                skill.Trim(), supportSkill == "-" ? null : supportSkill.Trim(), int.Parse(items[1].Substring(1, 2)));
+                skill.Trim(), supportSkill == "-" ? null : supportSkill.Trim(), int.Parse(items[1].Substring(1, 2)), new List<FEAlternateArts>());
 
             string artID = items[2].Split('_')[0].Replace("plus", "+");
 
@@ -107,3 +107,4 @@ JsonSerializerOptions options = new JsonSerializerOptions();
 options.WriteIndented = true;
 string jsonText = JsonSerializer.Serialize<FECard[]>(cardListNoKey, options);
 File.WriteAllText(outputFile, jsonText);
+*/

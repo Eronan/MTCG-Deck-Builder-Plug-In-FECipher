@@ -76,7 +76,7 @@ namespace FECipher
         }
 
         // Determines whether a card satisfies the Search Fields
-        private bool MatchFields(FECard card, SearchField[] searchFields)
+        private bool MatchFields(FECard card, IEnumerable<SearchField> searchFields)
         {
             foreach (SearchField field in searchFields)
             {
@@ -329,10 +329,10 @@ namespace FECipher
         /// <param name="cards">The List of Cards to be Filtered.</param>
         /// <param name="searchFields">All the Search Fields and their Values.</param>
         /// <returns>List of Cards from cards that matching searchFields.</returns>
-        public List<DeckBuilderCard> AdvancedFilterSearchList(IEnumerable<DeckBuilderCard> cards, SearchField[] searchFields)
+        public IEnumerable<DeckBuilderCardArt> AdvancedFilterSearchList(IEnumerable<DeckBuilderCardArt> cards, IEnumerable<SearchField> searchFields)
         {
-            List<DeckBuilderCard> returnList = new List<DeckBuilderCard>();
-            foreach (DeckBuilderCard card in cards)
+            List<DeckBuilderCardArt> returnList = new List<DeckBuilderCardArt>();
+            foreach (var card in cards)
             {
                 FECard? feCard = FECardList.GetCard(card.CardID);
 
