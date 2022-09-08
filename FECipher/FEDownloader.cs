@@ -9,39 +9,8 @@ namespace FECipher
 {
     internal class FEDownloader : IDownloader
     {
-        private HttpClient? httpClient { get; set; }
         public string DownloadLink { get => "https://github.com/Eronan/Multi-TCG-Deck-Builder-FECipher-Plug-In/releases"; }
 
-        public async Task DownloadFiles(HttpClient httpClient)
-        {
-            // https://raw.githubusercontent.com/Eronan/Multi-TCG-Deck-Builder-FECipher-Plug-In/master/FECipher/cardlist.json
-
-            // Download Card List File
-            if (!Directory.Exists("./plug-ins/fe-cipher"))
-            {
-                Directory.CreateDirectory("./plug-ins/fe-cipher");
-            }
-
-            this.httpClient = httpClient;
-            
-            var jsonFile = await httpClient.GetStringAsync("https://raw.githubusercontent.com/Eronan/Multi-TCG-Deck-Builder-FECipher-Plug-In/master/FECipher/cardlist.json").ConfigureAwait(false);
-            File.WriteAllText("./plug-ins/fe-cipher/cardlist.json", jsonFile);
-
-            FECardList.ReloadCardList(this);
-
-            Console.WriteLine("Completed");
-        }
-
-        public async Task DownloadImage(string downloadURL, string imageLocation)
-        {
-            if (httpClient == null) { httpClient = new HttpClient(); }
-            var response = await httpClient.GetAsync(downloadURL).ConfigureAwait(false);
-            var fileInfo = new FileInfo(imageLocation);
-            using (var stream = await response.Content.ReadAsStreamAsync())
-            using (var fileStream = fileInfo.OpenWrite())
-            {
-                stream.CopyTo(fileStream);
-            }
-        }
+        public IEnumerable<UrlToFile> FileDownloads => new UrlToFile[1] { new UrlToFile("https://raw.githubusercontent.com/Eronan/Multi-TCG-Deck-Builder-FECipher-Plug-In/master/FECipher/cardlist.json", "./plug-ins/fe-cipher/cardlist.json") };
     }
 }

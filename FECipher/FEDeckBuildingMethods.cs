@@ -155,7 +155,7 @@ namespace FECipher
                     {
                         foreach (var altArt in card.altArts)
                         {
-                            cardArtsList.Add(new DeckBuilderCardArt(card.ID, altArt.Id, card.Name, altArt.ImageLocation, CardArtOrientation.Portrait, card.ViewDetails));
+                            cardArtsList.Add(new DeckBuilderCardArt(card.ID, altArt.Id, card.Name, altArt.ImageLocation, altArt.ImageDownloadURL, CardArtOrientation.Portrait, card.ViewDetails));
                         }
                     }
 

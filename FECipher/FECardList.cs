@@ -33,7 +33,7 @@ namespace FECipher
             this.filteredList = allCards;
         }
 
-        private static IList<FECard> LoadCardList(FEDownloader? downloadService = null)
+        private static IList<FECard> LoadCardList()
         {
             string jsonText = File.ReadAllText("./plug-ins/fe-cipher/cardlist.json");
             JsonElement jsonDeserialize = JsonSerializer.Deserialize<dynamic>(jsonText);
@@ -97,31 +97,6 @@ namespace FECipher
 
                     // Make File Path a Relative Path
                     image = "." + image;
-                    if (!File.Exists(image))
-                    {
-                        if (downloadService != null)
-                        {
-                            var directoryPath = Path.GetDirectoryName(image);
-                            if (directoryPath != null && !Directory.Exists(directoryPath))
-                            {
-                                Directory.CreateDirectory(directoryPath);
-                            }
-
-                            // Give it 5 minutes to download
-                            var task = downloadService.DownloadImage(downloadURL, image);
-                            downloadList.Add(task);
-
-                            // If 80 tasks have been added since last time, wait until continuing to avoid overload
-                            if (downloadList.Count % 80 == 0)
-                            {
-                                Task.WaitAll(downloadList.ToArray());
-                            }
-                        }
-                        else
-                        {
-                            throw new FileNotFoundException(string.Format("{0} not found. Please download the file.", image));
-                        }
-                    }
                 }
 
                 if (id == null || character == null || title == null || colors == null || cost == null || cardClass == null || types == null ||
@@ -136,18 +111,13 @@ namespace FECipher
                 feCards.Add(card);
             }
 
-            if (downloadService != null)
-            {
-                Task.WaitAll(downloadList.ToArray());
-            }
-
             // Create Singleton Instance
             return feCards.OrderBy(card => card.ID).ToList();
         }
 
-        public static IList<FECard> ReloadCardList(FEDownloader downloadService)
+        public static IList<FECard> ReloadCardList()
         {
-            var cardlist = LoadCardList(downloadService);
+            var cardlist = LoadCardList();
             if (instance == null)
             {
                 instance = new FECardList(cardlist);
