@@ -1,10 +1,5 @@
 ﻿using IGamePlugInBase;
 using IGamePlugInBase.IO;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace FECipher
 {
@@ -305,22 +300,22 @@ namespace FECipher
                 }
             }
 
-            string textFormat = "Deck Size: {0}\tMain Characters: {1} ({2}%)\n" +
-                "0 Support: {3} ({4}%)\tNo Range: {11} ({12}%)\n" +
-                "10 Support: {5} ({6}%)\tRange 1: {13} ({14}%)\n" +
-                "20 Support: {7} ({8}%)\tRange 2: {15} ({16}%)\n" +
-                "30 Support: {9} ({10}%)\tRange 3: {17} ({17}%)\n";
+            string textFormat = "Deck Size: {0}\t\tMain Characters: {1} ({2}%)\n" +
+                "0 Support: {3} ({4}%)" + (support0 >= 100 ? "\t" : "\t\t") + "No Range: {11} ({12}%)\n" +
+                "10 Support: {5} ({6}%)" + (support10 >= 10 ? "\t" : "\t\t") + "Range 1: {13} ({14}%)\n" +
+                "20 Support: {7} ({8}%)" + (support20 >= 10 ? "\t" : "\t\t") + "Range 2: {15} ({16}%)\n" +
+                "30 Support: {9} ({10}%)" + (support30 >= 10 ? "\t" : "\t\t") + "Range 3: {17} ({17}%)\n";
 
             return string.Format(textFormat, deckSize,
-                mainCharacterNames, mainCharacterNames / deckSize * 100,
-                support0, support0 / deckSize * 100,
-                support10, support10 / deckSize * 100,
-                support20, support20 / deckSize * 100,
-                support30, support30 / deckSize * 100,
-                range0, range0 / deckSize * 100,
-                range1, range1 / deckSize * 100,
-                range2, range2 / deckSize * 100,
-                range3, range3 / deckSize * 100);
+                mainCharacterNames, Math.Round(((double)mainCharacterNames / (double)deckSize) * 100, 0),
+                support0, Math.Round(((double)support0 / (double)deckSize) * 100, 0),
+                support10, Math.Round(((double)support10 / (double)deckSize) * 100, 0),
+                support20, Math.Round(((double)support20 / (double)deckSize) * 100, 0),
+                support30, Math.Round(((double)support30 / (double)deckSize) * 100, 0),
+                range0, Math.Round(((double)range0 / (double)deckSize) * 100, 0),
+                range1, Math.Round(((double)range1 / (double)deckSize) * 100, 0),
+                range2, Math.Round(((double)range2 / (double)deckSize) * 100, 0),
+                range3, Math.Round(((double)range3 / (double)deckSize) * 100, 0));
         }
 
         /// <summary>

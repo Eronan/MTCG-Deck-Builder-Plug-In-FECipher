@@ -1,6 +1,4 @@
 ﻿using IGamePlugInBase;
-using IGamePlugInBase.IO;
-using System.Linq;
 
 namespace FECipher
 {

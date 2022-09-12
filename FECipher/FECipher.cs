@@ -1,12 +1,6 @@
 ﻿using IGamePlugInBase;
 using IGamePlugInBase.IO;
-using Octokit;
-using System;
-using System.IO;
-using System.Net;
-using System.Net.Http;
 using System.Reflection;
-using System.Text.Json;
 
 namespace FECipher
 {

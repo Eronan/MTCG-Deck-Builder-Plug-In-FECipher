@@ -1,7 +1,4 @@
-﻿using System.IO;
-using System.Text.Json;
-using System.Text.RegularExpressions;
-using FECipher;
+﻿using FECipher;
 
 // See https://aka.ms/new-console-template for more information
 const string lackeyCCGFile = @"D:\Ernest's Folder\Desktop Folders\Nothing Important\LackeyCCG\plugins\FECipher0\sets\official-cards.txt";
