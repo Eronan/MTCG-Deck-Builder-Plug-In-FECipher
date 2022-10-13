@@ -68,7 +68,7 @@ namespace FECipher
         /// <summary>
         /// A Service used to Download Necessary Files
         /// </summary>
-        public IDownloader? Downloader { get => new FEDownloader(); }
+        public IDownloader Downloader { get => new FEDownloader(); }
 
         /// <summary>
         /// All of the Import Menu Items that should be defined for the Plug-In.
