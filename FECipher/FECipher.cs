@@ -22,14 +22,16 @@ namespace FECipher
             };
 
             // Create Menu Items
-            this.ImportMenus = new IImportMenuItem[1]
+            this.ImportMenus = new IImportMenuItem[2]
             {
-                new LackeyCCGImport()
+                new LackeyCCGImport(),
+                new CipherVitImport()
             };
 
-            this.ExportMenus = new IExportMenuItem[1]
+            this.ExportMenus = new IExportMenuItem[2]
             {
-                new LackeyCCGExport()
+                new LackeyCCGExport(),
+                new CipherVitExport()
             };
         }
 
