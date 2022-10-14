@@ -75,7 +75,7 @@ namespace FECipher
         {
             foreach (SearchField field in searchFields)
             {
-                if (string.IsNullOrEmpty(field.Value) || (field.Value == "All" && (field.Id == "color1" || field.Id == "color2"))) continue;
+                if (field.Value == null || (field.Value is string && (field.Value == string.Empty || (field.Value == "All" && (field.Id == "color1" || field.Id == "color2"))))) continue;
 
                 switch (field.Id)
                 {
@@ -103,7 +103,7 @@ namespace FECipher
                         if (field.Comparison == SearchFieldComparison.Equals ^ card.types.Any(item => item.Contains(field.Value))) return false;
                         break;
                     case "range":
-                        int fieldValue = int.Parse(field.Value);
+                        int fieldValue = field.Value is string ? int.Parse(field.Value) : field.Value;
                         switch (field.Comparison)
                         {
                             case SearchFieldComparison.Equals:
