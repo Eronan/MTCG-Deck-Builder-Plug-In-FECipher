@@ -1,23 +1,43 @@
 ﻿// See https://aka.ms/new-console-template for more information
 using FECipher;
+using Microsoft.VisualBasic.FileIO;
 using System.Text.Json;
 
-const string jsonCardList = @"D:\..\GitUpdate Repos\Multi-TCG Deck Builder Projects\Multi-TCG-Deckbuilder\Multi-TCG-Deckbuilder\bin\Debug\net6.0-windows\plug-ins\fe-cipher\cardlist.json";
-const string imageDownloadURLs = @"D:\..\Desktop Folders\Nothing Important\LackeyCCG\plugins\FECipher0\CardImageURLs3.txt";
+const string InputFile = @"D:\..\GitUpdate Repos\Multi-TCG Deck Builder Projects\FECipher\FECipher\cardlist.json";
+const string CipherVitFileLocation = @"D:\..\Desktop Folders\Nothing Important\FECipherVit 5.9.0_en\res\cards\en";
 
-Dictionary<string, string> downloadURLs = new Dictionary<string, string>();
-foreach (string line in File.ReadAllLines(imageDownloadURLs))
+var CipherVitIds = new Dictionary<string, int>(); 
+
+var cipherVitFiles = Directory.GetFiles(CipherVitFileLocation, "*.fe0db");
+foreach (var vitFile in cipherVitFiles)
 {
-    string[] items = line.Split('\t');
-    string id = Path.GetFileNameWithoutExtension(items[0]);
-    downloadURLs.Add(id, items[1].Trim());
+    /*
+    using (TextFieldParser parser = new TextFieldParser(vitFile))
+    {
+        parser.TextFieldType = FieldType.Delimited;
+        parser.SetDelimiters(",");
+        while (!parser.EndOfData)
+        {
+            var fields = parser.ReadFields();
+            if (fields != null)
+            {
+                CipherVitIds.Add(fields[2], int.Parse(fields[0]));
+            }
+        }
+    }
+    */
+    var fileLines = File.ReadAllLines(vitFile);
+    foreach (var line in fileLines)
+    {
+        var fields = line.Split(',');
+        CipherVitIds.Add(fields[2] + fields[19], int.Parse(fields[0]));
+    }
 }
 
-string jsonText = File.ReadAllText(jsonCardList);
+string jsonText = File.ReadAllText(InputFile);
 JsonElement jsonDeserialize = JsonSerializer.Deserialize<dynamic>(jsonText);
 var jsonEnumerator = jsonDeserialize.EnumerateArray();
 
-// Get Card Data
 List<FECard> feCards = new List<FECard>();
 foreach (var jsonCard in jsonEnumerator)
 {
@@ -58,16 +78,16 @@ foreach (var jsonCard in jsonEnumerator)
         string? image = altArt.GetProperty("ImageFile").GetString();
         string? lackeyID = altArt.GetProperty("LackeyCCGID").GetString();
         string? lackeyName = altArt.GetProperty("LackeyCCGName").GetString();
-        int? cipherVitId = altArt.GetProperty("CipherVitID").GetInt32();
-        string? imageURL = lackeyID != null ? downloadURLs.GetValueOrDefault(Path.GetFileNameWithoutExtension(lackeyID)) : null;
+        int? cipherVitID = code != null ? CipherVitIds.GetValueOrDefault(code) : null;
+        string? imageURL = altArt.GetProperty("DownloadURL").GetString();
 
         //Cannot be Null
-        if (code == null || setNo == null || image == null || lackeyID == null || lackeyName == null || cipherVitId == null || imageURL == null)
+        if (code == null || setNo == null || image == null || lackeyID == null || lackeyName == null || cipherVitID == null || imageURL == null)
         {
             throw new ArgumentException("JSON Field AlternateArts is missing a Non-Nullable Property.");
         }
 
-        FEAlternateArts alt = new FEAlternateArts(code, setNo, image, lackeyID, lackeyName, cipherVitId.Value, imageURL.Trim());
+        FEAlternateArts alt = new FEAlternateArts(code, setNo, image, lackeyID, lackeyName, cipherVitID.Value, imageURL.Trim());
         altArts.Add(alt);
     }
 
@@ -83,10 +103,9 @@ foreach (var jsonCard in jsonEnumerator)
     feCards.Add(card);
 }
 
-
 FECard[] cardListNoKey = feCards.ToArray();
 
 JsonSerializerOptions options = new JsonSerializerOptions();
 options.WriteIndented = true;
 string newJsonText = JsonSerializer.Serialize<FECard[]>(cardListNoKey, options);
-File.WriteAllText(jsonCardList, newJsonText);
+File.WriteAllText(InputFile, newJsonText);

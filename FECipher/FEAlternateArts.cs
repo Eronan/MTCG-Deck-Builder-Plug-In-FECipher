@@ -4,13 +4,14 @@ namespace FECipher
 {
     public class FEAlternateArts
     {
-        public FEAlternateArts(string id, string setCode, string imageLocation, string lackeyCCGId, string lackeyCCGName, string imageDownloadURL)
+        public FEAlternateArts(string id, string setCode, string imageLocation, string lackeyCCGId, string lackeyCCGName, int cipherVitId, string imageDownloadURL)
         {
             Id = id;
             SetCode = setCode;
             ImageLocation = imageLocation;
             LackeyCCGId = lackeyCCGId;
             LackeyCCGName = lackeyCCGName;
+            CipherVitId = cipherVitId;
             ImageDownloadURL = imageDownloadURL;
         }
 
@@ -34,8 +35,12 @@ namespace FECipher
         [JsonPropertyOrder(4)]
         public string LackeyCCGName { get; set; }
 
-        [JsonPropertyName("DownloadURL")]
+        [JsonPropertyName("CipherVitId")]
         [JsonPropertyOrder(5)]
+        public int CipherVitId { get; set; }
+
+        [JsonPropertyName("DownloadURL")]
+        [JsonPropertyOrder(6)]
         public string ImageDownloadURL { get; set; }
     }
 }

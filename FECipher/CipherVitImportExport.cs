@@ -23,7 +23,7 @@ namespace FECipher
 
     internal class CipherVitExport : IExportMenuItem
     {
-        public string Header { get => "To FECipher Vit" }
+        public string Header { get => "To FECipher Vit"; }
 
         public string DefaultExtension { get => ".fe0d"; }
 
