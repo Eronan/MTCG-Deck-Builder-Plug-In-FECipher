@@ -2,8 +2,8 @@
 using FECipher;
 using System.Text.Json;
 
-const string jsonCardList = @"D:\Ernest's Folder\GitUpdate Repos\Multi-TCG Deck Builder Projects\Multi-TCG-Deckbuilder\Multi-TCG-Deckbuilder\bin\Debug\net6.0-windows\plug-ins\fe-cipher\cardlist.json";
-const string imageDownloadURLs = @"D:\Ernest's Folder\Desktop Folders\Nothing Important\LackeyCCG\plugins\FECipher0\CardImageURLs3.txt";
+const string jsonCardList = @"D:\..\GitUpdate Repos\Multi-TCG Deck Builder Projects\Multi-TCG-Deckbuilder\Multi-TCG-Deckbuilder\bin\Debug\net6.0-windows\plug-ins\fe-cipher\cardlist.json";
+const string imageDownloadURLs = @"D:\..\Desktop Folders\Nothing Important\LackeyCCG\plugins\FECipher0\CardImageURLs3.txt";
 
 Dictionary<string, string> downloadURLs = new Dictionary<string, string>();
 foreach (string line in File.ReadAllLines(imageDownloadURLs))

@@ -1,8 +1,8 @@
 ﻿using FECipher;
 
 // See https://aka.ms/new-console-template for more information
-const string lackeyCCGFile = @"D:\Ernest's Folder\Desktop Folders\Nothing Important\LackeyCCG\plugins\FECipher0\sets\official-cards.txt";
-//const string outputFile = @"D:\Ernest's Folder\GitUpdate Repos\Multi-TCG-Deckbuilder\Multi-TCG-Deckbuilder\bin\Debug\net6.0-windows\plug-ins\fe-cipher\cardlist_New.json";
+const string lackeyCCGFile = @"D:\..\Desktop Folders\Nothing Important\LackeyCCG\plugins\FECipher0\sets\official-cards.txt";
+//const string outputFile = @"D:\..\GitUpdate Repos\Multi-TCG-Deckbuilder\Multi-TCG-Deckbuilder\bin\Debug\net6.0-windows\plug-ins\fe-cipher\cardlist_New.json";
 
 string[] setFileLines = File.ReadAllLines(lackeyCCGFile);
 
