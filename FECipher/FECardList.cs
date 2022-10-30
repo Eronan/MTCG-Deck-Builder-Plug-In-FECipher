@@ -81,15 +81,16 @@ namespace FECipher
                     string? image = altArt.GetProperty("ImageFile").GetString();
                     string? lackeyID = altArt.GetProperty("LackeyCCGID").GetString();
                     string? lackeyName = altArt.GetProperty("LackeyCCGName").GetString();
+                    string? cipherVitId = altArt.GetProperty("CipherVitId").GetString();
                     string? downloadURL = altArt.GetProperty("DownloadURL").GetString();
 
                     //Cannot be Null
-                    if (code == null || setNo == null || image == null || lackeyID == null || lackeyName == null || downloadURL == null)
+                    if (code == null || setNo == null || image == null || lackeyID == null || lackeyName == null || cipherVitId == null || downloadURL == null)
                     {
                         throw new ArgumentException("JSON Field AlternateArts is missing a Non-Nullable Property.");
                     }
 
-                    FEAlternateArts alt = new FEAlternateArts(code, setNo, image, lackeyID, lackeyName, downloadURL);
+                    FEAlternateArts alt = new FEAlternateArts(code, setNo, image, lackeyID, lackeyName, cipherVitId, downloadURL);
                     altArts.Add(alt);
 
                     // Download File
